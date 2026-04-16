@@ -1,0 +1,30 @@
+# docker-compose.yml — rode o banco sem instalar PostgreSQL localmente
+# Uso: docker compose up -d
+
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mirian_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: senha123
+      POSTGRES_DB: delicias_mirian
+    ports:
+      - "5432:5432"
+    volumes:
+      - mirian_pgdata:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    container_name: mirian_adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  mirian_pgdata:

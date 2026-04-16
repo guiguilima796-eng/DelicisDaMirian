@@ -1,0 +1,73 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model StoreConfig {
+  id             Int     @id @default(1)
+  storeOpen      Boolean @default(true)
+  acceptOrders   Boolean @default(true)
+  deliveryRadius Float   @default(2.0)
+  deliveryFee    Float   @default(5.0)
+  storeAddress   String  @default("Rua das Flores, 123 – Centro, Floriano – PI")
+  storeLat       Float   @default(-6.7674)
+  storeLng       Float   @default(-43.015)
+  storePhone     String  @default("(89) 9 9999-9999")
+  updatedAt      DateTime @updatedAt
+}
+
+model MenuItem {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  category    String
+  image       String   @default("🍔")  // emoji or URL
+  badge       String?
+  available   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  publicId     String      @unique  // short readable ID like DM-001234
+  customerName String
+  phone        String
+  type         String      // "delivery" | "pickup"
+  address      String?
+  complement   String?
+  note         String?
+  status       String      @default("Recebido")  // Recebido | Em preparo | Pronto | Entregue | Cancelado
+  subtotal     Float
+  deliveryFee  Float       @default(0)
+  total        Float
+  items        OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  orderId    Int
+  menuItemId Int?
+  name       String   // snapshot at order time
+  price      Float    // snapshot at order time
+  quantity   Int
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+}
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
